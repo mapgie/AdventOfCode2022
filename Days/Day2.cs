@@ -38,6 +38,13 @@ class Day2 : AdventDay<string, int>
         C = 3  // scissor
     }
 
+    enum playsIndex
+    {
+        A = 0, // rock
+        B = 1, // paper
+        C = 2  // scissor
+    }
+
     internal override int PartOne()
     {
         // this is ugly as hell
@@ -77,10 +84,12 @@ class Day2 : AdventDay<string, int>
           var play = item.Substring(0,1).Trim();
           var outcome = item.Substring(2, 1).Trim();
 
-            var xindex = Enum.Parse(typeof(plays), play);
-            Matrix
+            Enum.TryParse(play, out playsIndex yindex);
+            Enum.TryParse(outcome, out desiredOutcomeIndex xindex);
+            Console.WriteLine(xindex);
+            Console.WriteLine(yindex);
         }
 
-        return ParTwoResult = total;
+        return PartTwoResult = 0;
     }
 }
