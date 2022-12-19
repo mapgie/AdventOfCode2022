@@ -345,4 +345,4 @@ MigrationBackup/
 .idea/
 
 # VS Shit
-.vs/*
+**/.vs/*
