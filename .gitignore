@@ -343,3 +343,6 @@ MigrationBackup/
 # JetBrains Rider
 *.sln.iml
 .idea/
+
+# VS Shit
+.vs/*
