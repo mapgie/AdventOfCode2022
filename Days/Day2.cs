@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,11 +32,18 @@ class Day2 : AdventDay<string, int>
         Z = 0  // win
     }
 
-    enum plays
+    enum playsAvailable
     {
         A = 1, // rock
         B = 2, // paper
         C = 3  // scissor
+    }
+
+    enum plays
+    {
+        Rock = 1, // rock
+        Paper = 2, // paper
+        Scissor = 3  // scissor
     }
 
     enum playsIndex
@@ -70,26 +78,87 @@ class Day2 : AdventDay<string, int>
     }
 
     internal override int PartTwo()
-    {
-        var Matrix = new List<List<plays>>();
-
-                                   // Z  (0)  // Y (1)   // X (2)
-        Matrix.Add(new List<plays>() { plays.B, plays.A, plays.C }); // A (0) Rock
-        Matrix.Add(new List<plays>() { plays.C, plays.B, plays.A }); // B (1) Paper
-        Matrix.Add(new List<plays>() { plays.A, plays.C, plays.B }); // C (2) Scissor
+    {                                                  // Win.Z.0       | Draw.Y.1       | Lose.X.2
+        //var rockFirst = new List<playsAvailable>() { playsAvailable.B, playsAvailable.A, playsAvailable.C }; // A (0) Rock
+        //var paperFirst = new List<playsAvailable>() { playsAvailable.C, playsAvailable.B, playsAvailable.A }; // B (1) Paper
+        //var scissorFirst = new List<playsAvailable>() { playsAvailable.A, playsAvailable.C, playsAvailable.B }; // C (2) Scissor
 
         var total = 0;
         foreach (var item in InputData)
         {
-          var play = item.Substring(0,1).Trim();
-          var outcome = item.Substring(2, 1).Trim();
+            var play = item.Substring(0, 1).Trim();
+            var outcome = item.Substring(2, 1).Trim();
 
-            Enum.TryParse(play, out playsIndex yindex);
-            Enum.TryParse(outcome, out desiredOutcomeIndex xindex);
-            Console.WriteLine(xindex);
-            Console.WriteLine(yindex);
+            if (!Enum.TryParse(play, out playsAvailable yindex)
+               | !Enum.TryParse(outcome, out desiredOutcomeIndex xindex))
+            {
+                continue;
+            }
+
+            IPossiblePlay secondPlay = yindex switch
+            {
+                playsAvailable.A => new RockFirst(),
+                playsAvailable.B => new PaperFirst(),
+                playsAvailable.C => new ScissorsFirst(),
+                _ => throw new NotImplementedException()
+            };
+
+            var score = secondPlay.Points
+                        + (secondPlay.BeatenBy).GetPoints();
+
         }
 
-        return PartTwoResult = 0;
+        return PartTwoResult = total;
     }
+
+    class RockFirst : IPossiblePlay
+    {
+        public int Points => 1;
+
+        public IPossiblePlay BeatenBy => new PaperFirst();
+        public IPossiblePlay Beats => new ScissorsFirst();
+        public int GetPoints()
+        {
+            return Points;
+        }
+    }
+
+    class PaperFirst : IPossiblePlay
+    {
+        public int Points => 2;
+
+        public IPossiblePlay BeatenBy => new ScissorsFirst();
+        public IPossiblePlay Beats => new RockFirst();
+
+        public int GetPoints()
+        {
+            return Points;
+        }
+    }
+    class ScissorsFirst : IPossiblePlay
+    {
+        public int Points => 3;
+
+        public IPossiblePlay BeatenBy => new RockFirst();
+        public IPossiblePlay Beats => new PaperFirst();
+
+        public int GetPoints()
+        {
+            return Points;
+        }
+    }
+
+    interface IPossiblePlay
+    {
+        public int Points { get; }
+
+        public IPossiblePlay BeatenBy { get; }
+        public IPossiblePlay Beats { get; }
+
+        public int GetPoints()
+        {
+            return Points;
+        }
+    }
+
 }
