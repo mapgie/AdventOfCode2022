@@ -18,41 +18,6 @@ class Day2 : AdventDay<string, int>
         InputData = FileReader.ReadAsString(InputRelativePath);
     }
 
-    enum desiredOutcomePoints
-    {
-        X = 0, // lose
-        Y = 3, // draw
-        Z = 6  // win
-    }
-
-    enum desiredOutcomeIndex
-    {
-        X = 2, // lose
-        Y = 1, // draw
-        Z = 0  // win
-    }
-
-    enum playsAvailable
-    {
-        A = 1, // rock
-        B = 2, // paper
-        C = 3  // scissor
-    }
-
-    enum plays
-    {
-        Rock = 1, // rock
-        Paper = 2, // paper
-        Scissor = 3  // scissor
-    }
-
-    enum playsIndex
-    {
-        A = 0, // rock
-        B = 1, // paper
-        C = 2  // scissor
-    }
-
     internal override int PartOne()
     {
         // this is ugly as hell
@@ -77,75 +42,29 @@ class Day2 : AdventDay<string, int>
         return PartOneResult = total;
     }
 
-    internal override int PartTwo()
-    {                                                  // Win.Z.0       | Draw.Y.1       | Lose.X.2
-        //var rockFirst = new List<playsAvailable>() { playsAvailable.B, playsAvailable.A, playsAvailable.C }; // A (0) Rock
-        //var paperFirst = new List<playsAvailable>() { playsAvailable.C, playsAvailable.B, playsAvailable.A }; // B (1) Paper
-        //var scissorFirst = new List<playsAvailable>() { playsAvailable.A, playsAvailable.C, playsAvailable.B }; // C (2) Scissor
-
-        var total = 0;
-        foreach (var item in InputData)
-        {
-            var play = item.Substring(0, 1).Trim();
-            var outcome = item.Substring(2, 1).Trim();
-
-            if (!Enum.TryParse(play, out playsAvailable yindex)
-               | !Enum.TryParse(outcome, out desiredOutcomeIndex xindex))
-            {
-                continue;
-            }
-
-            IPossiblePlay secondPlay = yindex switch
-            {
-                playsAvailable.A => new RockFirst(),
-                playsAvailable.B => new PaperFirst(),
-                playsAvailable.C => new ScissorsFirst(),
-                _ => throw new NotImplementedException()
-            };
-
-            var score = secondPlay.Points
-                        + (secondPlay.BeatenBy).GetPoints();
-
-        }
-
-        return PartTwoResult = total;
-    }
-
-    class RockFirst : IPossiblePlay
+    class Rock : IPossiblePlay
     {
         public int Points => 1;
 
-        public IPossiblePlay BeatenBy => new PaperFirst();
-        public IPossiblePlay Beats => new ScissorsFirst();
-        public int GetPoints()
-        {
-            return Points;
-        }
-    }
+        public IPossiblePlay BeatenBy => new Paper();
+        public IPossiblePlay Beats => new Scissors();
 
-    class PaperFirst : IPossiblePlay
+    }
+    class Paper : IPossiblePlay
     {
         public int Points => 2;
 
-        public IPossiblePlay BeatenBy => new ScissorsFirst();
-        public IPossiblePlay Beats => new RockFirst();
+        public IPossiblePlay BeatenBy => new Scissors();
+        public IPossiblePlay Beats => new Rock();
 
-        public int GetPoints()
-        {
-            return Points;
-        }
     }
-    class ScissorsFirst : IPossiblePlay
+    class Scissors : IPossiblePlay
     {
         public int Points => 3;
 
-        public IPossiblePlay BeatenBy => new RockFirst();
-        public IPossiblePlay Beats => new PaperFirst();
+        public IPossiblePlay BeatenBy => new Rock();
+        public IPossiblePlay Beats => new Paper();
 
-        public int GetPoints()
-        {
-            return Points;
-        }
     }
 
     interface IPossiblePlay
@@ -159,6 +78,70 @@ class Day2 : AdventDay<string, int>
         {
             return Points;
         }
+
+        public string GetName()
+        {
+            return this.GetType().Name;
+        }
+
+    }
+
+    enum desiredOutcomePoints
+    {
+        X = 0, // lose
+        Y = 3, // draw
+        Z = 6  // win
+    }
+
+    enum plays
+    {
+        A, // rock
+        B, // paper
+        C  // scissor
+    }
+
+    internal override int PartTwo()
+    {                                                  // Win.Z.0       | Draw.Y.1       | Lose.X.2
+        //var rockFirst = new List<playsAvailable>() { playsAvailable.B, playsAvailable.A, playsAvailable.C }; // A (0) Rock
+        //var paperFirst = new List<playsAvailable>() { playsAvailable.C, playsAvailable.B, playsAvailable.A }; // B (1) Paper
+        //var scissorFirst = new List<playsAvailable>() { playsAvailable.A, playsAvailable.C, playsAvailable.B }; // C (2) Scissor
+
+        var total = 0;
+        foreach (var item in InputData)
+        {
+            var play = item.Substring(0, 1).Trim();
+            var outcome = item.Substring(2, 1).Trim();
+
+            if (!Enum.TryParse(play, out plays firstPlay)
+               | !Enum.TryParse(outcome, out desiredOutcomePoints desiredResult))
+            {
+                continue;
+            }
+
+            IPossiblePlay firstPlayDetails = firstPlay switch
+            {
+                plays.A => new Rock(),
+                plays.B => new Paper(),
+                plays.C => new Scissors(),
+                _ => throw new NotImplementedException()
+            };
+
+            IPossiblePlay secondPlay = desiredResult switch
+            {
+                desiredOutcomePoints.X => firstPlayDetails.Beats,
+                desiredOutcomePoints.Y => firstPlayDetails,
+                desiredOutcomePoints.Z => firstPlayDetails.BeatenBy,
+                _ => throw new NotImplementedException()
+            };
+
+            total += (int)desiredResult + secondPlay.GetPoints();
+
+            //Console.WriteLine(
+            //    $"({item}) - {firstPlayDetails.GetName()} | {secondPlay.GetType().Name} ({secondPlay.GetPoints()}pts) || {outcome} ({(int)desiredResult}pts)");
+
+        }
+
+        return PartTwoResult = total;
     }
 
 }
